@@ -7,16 +7,11 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final routeargs =
-        ModalRoute.of(context)?.settings.arguments as Map<String, String>;
-        final username = routeargs['username'];
-        // final password = routeargs['password'];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home Screen'),
       ),
-      body: Center(child: Text('$username')),
+      body: Center(child: Text('Home Screen')),
     );
   }
 }

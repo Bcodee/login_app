@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loginapp/screens/homescreen.dart';
@@ -12,10 +13,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController cUsername = TextEditingController();
+  TextEditingController cEmail = TextEditingController();
   TextEditingController cPassword = TextEditingController();
 
   bool isHiddenPassword = true;
+
+  //to login
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
-                controller: cUsername,
+                controller: cEmail,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(vertical: 17),
                   fillColor: Colors.white,
@@ -86,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                if (cUsername.text.isNotEmpty && cPassword.text.isNotEmpty) {
+                if (cEmail.text.isNotEmpty && cPassword.text.isNotEmpty) {
                   Navigator.popAndPushNamed(context, HomeScreen.routeName);
                 } else {
                   Fluttertoast.showToast(msg: "Enter Username or Password");

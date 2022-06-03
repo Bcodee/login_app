@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:loginapp/models/user.dart';
 import 'package:loginapp/screens/loginscreen1.dart';
 
 // ignore: use_key_in_widget_constructors
@@ -13,12 +13,34 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  TextEditingController cPasswordCtrl = TextEditingController();
-  TextEditingController cUsernameCtrl = TextEditingController();
-  TextEditingController cEmailCtrl = TextEditingController();
+  TextEditingController cEmail = TextEditingController();
+  TextEditingController cPassword = TextEditingController();
   bool isHiddenPassword = true;
   //define global key
+
+  // To Register
+  void register() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+              email: cEmail.text, password: cPassword.text);
+
+      Navigator.of(context).pushReplacementNamed(LoginScreen1.routename);
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+          msg: e.message.toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }
+  }
+
+  //define global key
   final _formkey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -65,36 +87,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(
                             height: 20,
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: TextFormField(
-                              validator: (val) {
-                                if (val == null || val.isEmpty) {
-                                  return "please enter Username";
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10.0)),
-                                  borderSide: BorderSide(
-                                      width: 3, color: Color(0xff283618)),
-                                ),
-                                contentPadding:
-                                    EdgeInsets.symmetric(vertical: 17),
-                                fillColor: Colors.red,
-                                hintText: 'Enter User ID',
-                                prefixIcon: Icon(Icons.person),
-                              ),
-                            ),
-                          ),
+
                           const SizedBox(
                             height: 0,
                           ),
                           Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: TextFormField(
+                              controller: cEmail,
                               validator: (val) {
                                 if (val == null || val.isEmpty) {
                                   return "Please Enter Email";
@@ -118,10 +118,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: TextFormField(
-                              controller: cPasswordCtrl,
+                              controller: cPassword,
                               validator: (val) {
                                 if (val == null || val.isEmpty) {
                                   return "Enter Password";
+                                }
+                                if (val.length < 6) {
+                                  return "Password length must be more than 6";
                                 }
                                 return null;
                               },
@@ -153,7 +156,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 if (val == null || val.isEmpty) {
                                   return "Please Enter Password";
                                 }
-                                if (cPasswordCtrl.text != val) {
+                                if (cPassword.text != val) {
                                   return 'Password Mismatch';
                                 }
                                 return null;
@@ -193,26 +196,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             onPressed: () {
                               if (_formkey.currentState!.validate()) {
-                                User u = User(cUsernameCtrl.text,
-                                    cEmailCtrl.text, cPasswordCtrl.text);
-                                allUsers.add(u);
-                                Fluttertoast.showToast(
-                                    msg: 'User Created Successfully');
-                                Navigator.pop(context);
+                                register();
                               }
                             },
                           ),
                           const SizedBox(height: 20),
                           TextButton(
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                    context, LoginScreen1.routename);
-                              },
-                              child: const Text(
-                                'Already have account? Click here',
-                                style: TextStyle(
-                                    fontSize: 15, color: Colors.black),
-                              ))
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                  context, LoginScreen1.routename);
+                            },
+                            child: const Text(
+                              'Already have account? Click here',
+                              style:
+                                  TextStyle(fontSize: 15, color: Colors.black),
+                            ),
+                          ),
                         ],
                       ),
                     ),

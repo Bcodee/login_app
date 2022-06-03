@@ -1,7 +1,9 @@
 // ignore_for_file: use_key_in_widget_constructors
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:loginapp/models/user.dart';
 import 'package:loginapp/screens/homescreen.dart';
 // import 'package:google_fonts/google_fonts.dart';
@@ -17,11 +19,47 @@ class LoginScreen1 extends StatefulWidget {
 
 class _LoginScreen1State extends State<LoginScreen1> {
   bool isHiddenPassword = true;
-  TextEditingController cUsername = TextEditingController();
+  TextEditingController cEmail = TextEditingController();
   TextEditingController cPassword = TextEditingController();
   //example user name and password
   // String username = 'Admin';
   // String password = 'Test123';
+  void login() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+              email: cEmail.text, password: cPassword.text);
+      Navigator.of(context).popAndPushNamed(HomeScreen.routeName);
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+          msg: e.message.toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }
+  }
+
+  //signIn with google
+  Future<UserCredential> signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +115,7 @@ class _LoginScreen1State extends State<LoginScreen1> {
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: TextField(
-                          controller: cUsername,
+                          controller: cEmail,
                           decoration: InputDecoration(
                             contentPadding:
                                 const EdgeInsets.symmetric(vertical: 17),
@@ -92,7 +130,7 @@ class _LoginScreen1State extends State<LoginScreen1> {
                               borderSide: const BorderSide(
                                   width: 0.8, color: Colors.green),
                             ),
-                            hintText: 'Enter Username',
+                            hintText: 'Enter Email',
                             prefixIcon: const Icon(Icons.person),
                           ),
                         ),
@@ -135,33 +173,12 @@ class _LoginScreen1State extends State<LoginScreen1> {
                       ),
                       ElevatedButton.icon(
                         onPressed: () {
-                          if (allUsers.isEmpty) {
-                            Fluttertoast.showToast(
-                                msg: "No user Found");
-                            return;
-                          }
-                          if (cUsername.text.isNotEmpty &&
-                              cPassword.text.isNotEmpty) { 
-                            allUsers.forEach((user) {
-                              String username = user.name;
-                              String password = user.password;
-                              if (cUsername.text == username && 
-                                  cPassword.text == password) {
-                                Navigator.popAndPushNamed(
-                                    context, HomeScreen.routeName, arguments: {
-                                  'username': cUsername.text,
-                                  'password': cPassword.text
-                                });
-                                Fluttertoast.showToast(
-                                    msg: 'Successfully login');
-                                return;
-                              }
-                            });
-                            Fluttertoast.showToast(
-                                msg: "Invalid Username or Password");
+                          if (cEmail.text.isNotEmpty &&
+                              cPassword.text.isNotEmpty) {
+                            login();
                           } else {
                             Fluttertoast.showToast(
-                                msg: "Invalid Username or Password");
+                                msg: 'Please enter email and password');
                           }
                         },
                         icon: const Icon(Icons.login),
@@ -203,8 +220,10 @@ class _LoginScreen1State extends State<LoginScreen1> {
                           ),
                           SignInButton(
                             Buttons.Google,
-                            text: "Sign up with Google",
-                            onPressed: () {},
+                            text: "Sign in with Google",
+                            onPressed: () {
+                              signInWithGoogle();
+                            },
                           ),
                         ],
                       ),
